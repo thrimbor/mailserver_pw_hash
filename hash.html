@@ -1,0 +1,71 @@
+<html>
+    <head>
+        <script src="sha512.js" type="text/javascript"></script>
+        <script type="text/javascript">
+            function _arrayBufferToBase64( buffer ) {
+                var binary = '';
+                var bytes = new Uint8Array( buffer );
+                var len = bytes.byteLength;
+                for (var i = 0; i < len; i++) {
+                    binary += String.fromCharCode( bytes[ i ] );
+                }
+                return window.btoa( binary );
+            }
+
+            function appendBuffer( buffer1, buffer2 ) {
+                var tmp = new Uint8Array( buffer1.byteLength + buffer2.byteLength );
+                tmp.set( new Uint8Array( buffer1 ), 0 );
+                tmp.set( new Uint8Array( buffer2 ), buffer1.byteLength );
+                return tmp.buffer;
+            }
+
+            function generate_hashstring(pw) {
+                // Get 32 byte salt
+                var salt = new Uint8Array(32);
+                window.crypto.getRandomValues(salt);
+
+                // Hash salted password
+                var sha = sha512.create();
+                sha.update('Hello!');
+                sha.update(salt);
+
+                // Put hash and salt into Dovecot format
+                var final_hashstring = _arrayBufferToBase64(appendBuffer(sha.arrayBuffer(), salt.buffer));
+                return "{SSHA512}" + final_hashstring;
+            }
+
+            function do_work() {
+                var pw1 = document.getElementById("password_input_1").value;
+                var pw2 = document.getElementById("password_input_2").value;
+
+                if (pw1 != pw2) {
+                    alert("Password inputs do not match!");
+                    return;
+                }
+
+                var hashstring = generate_hashstring(pw1);
+                document.getElementById("result_field").value = hashstring;
+            }
+        </script>
+    </head>
+    <body>
+        <div>
+            Please enter your password:
+        </div>
+        <div>
+            <textarea id="password_input_1"></textarea>
+        </div>
+        <div>
+            Please enter your password again:
+        </div>
+        <div>
+            <textarea id="password_input_2"></textarea>
+        </div>
+        <div>
+            <button onclick="do_work()">Run</button>
+        </div>
+        <div>
+            <textarea id="result_field" readonly>Hash appears here!</textarea>
+        </div>
+    </body>
+</html>
