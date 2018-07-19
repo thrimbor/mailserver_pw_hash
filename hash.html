@@ -26,7 +26,7 @@
 
                 // Hash salted password
                 var sha = sha512.create();
-                sha.update('Hello!');
+                sha.update(pw);
                 sha.update(salt);
 
                 // Put hash and salt into Dovecot format
